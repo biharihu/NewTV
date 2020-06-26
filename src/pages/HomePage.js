@@ -1,54 +1,94 @@
 import React, { useState } from "react";
+
+// Dependencies import
 import Carousel from "react-bootstrap/Carousel";
+import axios from "axios";
+
 // Style import
 import "./homePage.scss";
 
 const HomePage = () => {
   const [index, setIndex] = useState(0);
+  const [data, setData] = useState([]);
+  const [dataLoaded, setDataLoaded] = useState(false);
+  const [dataLoading, setDataLoading] = useState(false);
+  const [loaded, setLoaded] = useState("");
 
   const handleSelect = (selectedIndex, e) => {
     setIndex(selectedIndex);
   };
+
+  const getData = (e) => {
+    setDataLoading(true);
+
+    axios
+      .get(
+        "https://pixabay.com/api/?key=17116025-59af6bf08512e84d50c227107&q=yellow+flowers&image_type=photo&pretty=true"
+      )
+      .then((res) => JSON.stringify(res.data.hits))
+      .then((res) => JSON.parse(res))
+      .then((res) => {
+        setData(res);
+        setTimeout(() => {
+          setLoaded("loaded");
+          setDataLoaded(true);
+        }, 1500);
+      })
+      .catch((e) => alert("Someting Went wrong try again"));
+  };
+
   return (
-    <div className="homePage">
+    <div className={`homePage ${loaded}`}>
+      {/* Header */}
       <div className="header">
         <h1 className="header--title">NewTV</h1>
       </div>
 
       <div>
-        <Carousel interval={500} activeIndex={index} onSelect={handleSelect}>
-          <Carousel.Item>
-            <div
-              style={{ background: "red", height: "90vh", width: "100%" }}
-            ></div>
+        {/* Loader */}
 
-            <Carousel.Caption>
-              <h3>First </h3>
-              <p>Nulla</p>
-            </Carousel.Caption>
-          </Carousel.Item>
-          <Carousel.Item>
-            <div
-              style={{ background: "green", height: "90vh", width: "100%" }}
-            ></div>
+        {dataLoading && (
+          <div id="loader-wrapper">
+            <div id="loader"></div>
 
-            <Carousel.Caption>
-              <h3>Second</h3>
-              <p>Lorem</p>
-            </Carousel.Caption>
-          </Carousel.Item>
-          <Carousel.Item>
-            <div
-              style={{ background: "blue", height: "90vh", width: "100%" }}
-            ></div>
+            <div class="loader-section section-left"></div>
+            <div class="loader-section section-right"></div>
+          </div>
+        )}
 
-            <Carousel.Caption>
-              <h3>Third</h3>
-              <p>Praesent</p>
-            </Carousel.Caption>
-          </Carousel.Item>
-        </Carousel>
+        {/* Carousel */}
+
+        {dataLoaded && (
+          <Carousel
+            pause={false}
+            interval={2000}
+            activeIndex={index}
+            onSelect={handleSelect}
+          >
+            {data.map((e, i) => (
+              <Carousel.Item key={e.id}>
+                <img
+                  alt={e.tags}
+                  className="imageCarousel"
+                  src={e.largeImageURL}
+                />
+
+                <Carousel.Caption>
+                  <h3 className="captionTitle">{e.tags}</h3>
+                </Carousel.Caption>
+              </Carousel.Item>
+            ))}
+          </Carousel>
+        )}
       </div>
+
+      {/* Button */}
+
+      {!dataLoading && (
+        <button onClick={(e) => getData(e)} class={`bubbly-button`}>
+          Watch Now
+        </button>
+      )}
     </div>
   );
 };
